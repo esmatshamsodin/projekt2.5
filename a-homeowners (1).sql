@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Mar 12, 2018 at 11:51 AM
+-- Generation Time: Mar 12, 2018 at 02:26 PM
 -- Server version: 10.1.30-MariaDB
 -- PHP Version: 7.2.1
 
@@ -25,18 +25,6 @@ SET time_zone = "+00:00";
 -- --------------------------------------------------------
 
 --
--- Table structure for table `comments`
---
-
-CREATE TABLE `comments` (
-  `id` int(11) NOT NULL,
-  `description` varchar(250) NOT NULL,
-  `active` int(1) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-
--- --------------------------------------------------------
-
---
 -- Table structure for table `grundbuch`
 --
 
@@ -50,13 +38,25 @@ CREATE TABLE `grundbuch` (
 -- --------------------------------------------------------
 
 --
--- Table structure for table `hause`
+-- Table structure for table `house`
 --
 
-CREATE TABLE `hause` (
-  `id` int(11) NOT NULL,
+CREATE TABLE `house` (
+  `hause_id` int(11) NOT NULL,
   `image` varchar(200) NOT NULL,
-  `fr-k-grundbuch` int(11) NOT NULL
+  `fk_grund_id` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `likes`
+--
+
+CREATE TABLE `likes` (
+  `likes_id` int(11) NOT NULL,
+  `fk_user_id` int(11) NOT NULL,
+  `fk_posts_id` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 -- --------------------------------------------------------
@@ -70,11 +70,24 @@ CREATE TABLE `owners` (
   `name` varchar(55) NOT NULL,
   `lastname` varchar(55) NOT NULL,
   `birthdate` date NOT NULL,
-  `phon` int(100) NOT NULL,
-  `address` varchar(230) NOT NULL,
+  `phone` int(100) NOT NULL,
+  `address` varchar(100) NOT NULL,
   `number-of-rel` int(55) NOT NULL,
   `can-vot` int(1) NOT NULL,
-  `fk-hause-id` int(11) NOT NULL
+  `fk_hause_id` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `posts`
+--
+
+CREATE TABLE `posts` (
+  `post_id` int(11) NOT NULL,
+  `text` varchar(250) NOT NULL,
+  `active` int(1) NOT NULL,
+  `likes_id` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 -- --------------------------------------------------------
@@ -94,7 +107,7 @@ CREATE TABLE `renters` (
   `can-propose` int(1) NOT NULL,
   `can-comment` int(1) NOT NULL,
   `can-see-nach` int(1) NOT NULL,
-  `fk-hause-id` int(11) NOT NULL
+  `fk_hause_id` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 -- --------------------------------------------------------
@@ -116,34 +129,46 @@ CREATE TABLE `users` (
 --
 
 --
--- Indexes for table `comments`
---
-ALTER TABLE `comments`
-  ADD PRIMARY KEY (`id`);
-
---
 -- Indexes for table `grundbuch`
 --
 ALTER TABLE `grundbuch`
   ADD PRIMARY KEY (`id`);
 
 --
--- Indexes for table `hause`
+-- Indexes for table `house`
 --
-ALTER TABLE `hause`
-  ADD PRIMARY KEY (`id`);
+ALTER TABLE `house`
+  ADD PRIMARY KEY (`hause_id`),
+  ADD KEY `fk_grund_id` (`fk_grund_id`);
+
+--
+-- Indexes for table `likes`
+--
+ALTER TABLE `likes`
+  ADD PRIMARY KEY (`likes_id`),
+  ADD KEY `fk_user_id` (`fk_user_id`),
+  ADD KEY `fk_posts_id` (`fk_posts_id`);
 
 --
 -- Indexes for table `owners`
 --
 ALTER TABLE `owners`
-  ADD PRIMARY KEY (`id`);
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `fk_hause_id` (`fk_hause_id`);
+
+--
+-- Indexes for table `posts`
+--
+ALTER TABLE `posts`
+  ADD PRIMARY KEY (`post_id`),
+  ADD KEY `likes_id` (`likes_id`);
 
 --
 -- Indexes for table `renters`
 --
 ALTER TABLE `renters`
-  ADD PRIMARY KEY (`id`);
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `fk_hause_id` (`fk_hause_id`);
 
 --
 -- Indexes for table `users`
@@ -157,10 +182,51 @@ ALTER TABLE `users`
 --
 
 --
+-- AUTO_INCREMENT for table `likes`
+--
+ALTER TABLE `likes`
+  MODIFY `likes_id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
   MODIFY `userId` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- Constraints for dumped tables
+--
+
+--
+-- Constraints for table `house`
+--
+ALTER TABLE `house`
+  ADD CONSTRAINT `house_ibfk_1` FOREIGN KEY (`fk_grund_id`) REFERENCES `grundbuch` (`id`);
+
+--
+-- Constraints for table `likes`
+--
+ALTER TABLE `likes`
+  ADD CONSTRAINT `likes_ibfk_1` FOREIGN KEY (`fk_user_id`) REFERENCES `users` (`userId`),
+  ADD CONSTRAINT `likes_ibfk_2` FOREIGN KEY (`fk_posts_id`) REFERENCES `posts` (`post_id`);
+
+--
+-- Constraints for table `owners`
+--
+ALTER TABLE `owners`
+  ADD CONSTRAINT `owners_ibfk_1` FOREIGN KEY (`fk_hause_id`) REFERENCES `house` (`hause_id`);
+
+--
+-- Constraints for table `posts`
+--
+ALTER TABLE `posts`
+  ADD CONSTRAINT `posts_ibfk_1` FOREIGN KEY (`likes_id`) REFERENCES `likes` (`likes_id`);
+
+--
+-- Constraints for table `renters`
+--
+ALTER TABLE `renters`
+  ADD CONSTRAINT `renters_ibfk_1` FOREIGN KEY (`fk_hause_id`) REFERENCES `house` (`hause_id`);
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
